@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const express = require('express');
 
 mongoose.connect("mongodb://localhost:27017/blogas", (error) => {
   if (!error) {
@@ -7,3 +8,6 @@ mongoose.connect("mongodb://localhost:27017/blogas", (error) => {
     console.log("nepajunge");
   }
 });
+
+const irasai = require('./irasai.model');
+const failai = require('./failai.model');
