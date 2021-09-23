@@ -1,39 +1,46 @@
-const connection = require("./model");
-const express = require("express");
+//    .\mongod.exe --dbpath='C:\Users\toshiba satellite\Desktop\BIT\mongoDB\data'
+
+/* 2021-09-20 */
+//Paimam is model folderio index js faila
+require('./model');
+//Paimam express moduli
+const express = require('express');
+//Pajungiam nauja express aplikacija
 const application = express();
-const path = require("path");
-const expressHandlebars = require("express-handlebars");
+//Prijungiame nodejs biblioteka path
+const path = require('path');
+//Prijungiame express-handlebars
+const expressHandlebars = require('express-handlebars');
+//Pajungiame controllers direktorija
+const irasaicontroller = require('./controllers/irasai');
 
-// expressHandlebars.registerHelper('dateFormat', require('handlebars-dateformat'));
-const irasaiController =  require('./controllers/irasai');
+application.use(express.urlencoded({
+    extended: false
+}));
 
-application.use(
-  express.urlencoded({
-    extended: false,
-  })
-);
+//Aplikacijai priskiriame views direktorija is kurios imsime sablonus
+application.set('views', path.join(__dirname, '/views/'));
 
-application.set('views', path.join(__dirname,'/views/'));
-
+//aplikacijai prisikiriame handlebars papildini ir jam nustatoteme pagrindini sablona,
+//kuris apims visa atvaizduojamos aplikacijos turini
 application.engine('hbs', expressHandlebars({
     extname: 'hbs',
     defaultLayout: 'mainlayout',
-    layoutsDir: __dirname + '/views/layouts',
-    // helpers: registerHelper('dateFormat', require('handlebars-dateformat'))
+    layoutsDir: __dirname + '/views/layouts'
 }));
 
-application.set('view engine','hbs');
+//ijungiame templeitu engine
+application.set('view engine', 'hbs');
 
-application.get("/", (req, res) => {
-  res.render("index");
+//Sukuriame pirma routeri skirta atvaizduoti turini tituliniame puslapyje
+application.get('/', (req, res) => {
+    res.render('index');
 });
 
+//Pajungiame controllers/irasai.js faila adresui /irasai
+application.use('/irasai', irasaicontroller)
 
-application.use('/irasai',irasaiController);
-// application.get("/irasai", (req, res) => {
-//   res.send("irasu puslapis");
-// });
-
-application.listen("3000", () => {
-  console.log("Server ON");
+//Ijungiame aplikacija ja paleidziant 3000 porte
+application.listen('3000', ()=> {
+    console.log('Serveris veikia');
 });
