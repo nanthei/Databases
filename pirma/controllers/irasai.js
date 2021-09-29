@@ -142,4 +142,19 @@ router.post('/paieska', (req, res) => {
     .lean();
 });
 
+router.get('/delete/:id', (req, res) => {
+    const id = req.params.id;
+
+    irasaimodel.findByIdAndDelete(id).lean()
+    .then(res.redirect('/irasai')
+    )
+    .catch(err => {
+        res.json({
+            response: 'fail',
+            message: err.message
+        });
+    });
+
+});
+
 module.exports = router;
