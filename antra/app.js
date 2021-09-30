@@ -1,21 +1,66 @@
 const express = require("express");
+const hbs = require("express-handlebars");
 const app = express();
-const mysql = require("mysql");
+const path = require("path");
+const db = require("./db/connection");
 
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "myblog",
+app.use(
+  express.urlencoded({
+    extended: false,
+  })
+);
+
+app.engine(
+  "hbs",
+  hbs({
+    extname: "hbs",
+    defaultLayout: "layout",
+    layoutsDir: __dirname + "/views/template",
+  })
+);
+
+app.set("views", path.join(__dirname, "/views/"));
+
+app.set("view engine", "hbs");
+
+app.use('/static', express.static('public'));
+
+app.get("/", (req, res) => {
+  res.render("add-company");
 });
 
-db.connect((err) => {
-  if (err) {
-    console.log("nepavyko pasijungt i db");
-    return;
-  }
-  console.log("pasijungem prie db");
+app.get("/add-company", (req, res) => {
+  res.render("add-company");
 });
+
+app.post("/add-company", (req, res) => {
+  let companyName = req.body.name;
+  let companyAdress = req.body.adress;
+  let message = "";
+
+  db.query(
+    `SELECT * FROM companies WHERE name = '${companyName}'`,
+    (err, resp) => {
+      if (resp.length == 0) {
+        db.query(
+          `INSERT INTO companies (name, adress)
+         VALUES ('${companyName}', '${companyAdress}')`,
+          (err) => {
+            if (err) {
+              console.log(err);
+              return;
+            }
+            res.redirect("/?m=company added");
+          }
+        );
+      } else {
+        res.redirect("/?m=company already exists");
+      }
+    }
+  );
+});
+
+app.listen("3000");
 
 // db.query(`CREATE TABLE IF NOT EXISTS irasai(
 //     id int(9) NOT NULL AUTO_INCREMENT,
@@ -43,7 +88,6 @@ db.connect((err) => {
 //     console.log(res);
 //   });
 
-
 //1111111111111111111111111111111111
 // db.query(
 //   `INSERT INTO irasai(pavadinimas, turinys) VALUES ('kitas','kitas')`,
@@ -64,7 +108,7 @@ db.connect((err) => {
 //   });
 
 //33333333333333333333333333333333
-// db.query(`UPDATE irasai 
+// db.query(`UPDATE irasai
 // SET pavadinimas = 'update'
 // WHERE 1`, (err, res) => {
 //     if (err) {
@@ -81,9 +125,9 @@ db.connect((err) => {
 //     console.log(res);
 //   });
 
-  db.query("SELECT * FROM irasai", (err, res) => {
-    if (err) {
-        console.log(err);
-      }
-    console.log(res);
-  });
+// db.query("SELECT * FROM irasai", (err, res) => {
+//   if (err) {
+//       console.log(err);
+//     }
+//   console.log(res);
+// });
