@@ -2,7 +2,18 @@ const express = require("express");
 const hbs = require("express-handlebars");
 const app = express();
 const path = require("path");
-const db = require("./db/connection");
+// const db = require('./db/connection');
+const clientsController = require("./controllers/clients");
+const companiesController = require("./controllers/companies");
+const loginController = require("./controllers/login");
+
+const session = require('express-session');
+
+app.use(session({
+secret: 'secret',
+resave: true,
+saveUninitialized: true
+}));
 
 app.use(
   express.urlencoded({
@@ -23,111 +34,25 @@ app.set("views", path.join(__dirname, "/views/"));
 
 app.set("view engine", "hbs");
 
-app.use('/static', express.static('public'));
+app.use("/uploads", express.static("uploads"));
+app.use("/static", express.static("static"));
+app.use(
+  "/static/css",
+  express.static(path.join(__dirname, "node_modules/bootstrap/dist/css"))
+);
+app.use(
+  "/static/js",
+  express.static(path.join(__dirname, "node_modules/bootstrap/dist/js"))
+);
+
+app.use("/", clientsController);
+app.use("/", companiesController);
+app.use("/", loginController);
+
+//Controlleris vedantis index puslapi
 
 app.get("/", (req, res) => {
-  res.render("add-company");
-});
-
-app.get("/add-company", (req, res) => {
-  res.render("add-company");
-});
-
-app.post("/add-company", (req, res) => {
-  let companyName = req.body.name;
-  let companyAdress = req.body.adress;
-  let message = "";
-
-  db.query(
-    `SELECT * FROM companies WHERE name = '${companyName}'`,
-    (err, resp) => {
-      if (resp.length == 0) {
-        db.query(
-          `INSERT INTO companies (name, adress)
-         VALUES ('${companyName}', '${companyAdress}')`,
-          (err) => {
-            if (err) {
-              console.log(err);
-              return;
-            }
-            res.redirect("/?m=company added");
-          }
-        );
-      } else {
-        res.redirect("/?m=company already exists");
-      }
-    }
-  );
+  res.render("template/login");
 });
 
 app.listen("3000");
-
-// db.query(`CREATE TABLE IF NOT EXISTS irasai(
-//     id int(9) NOT NULL AUTO_INCREMENT,
-//     pavadinimas varchar(256),
-//     turinys text,
-//     PRIMARY KEY (id)
-//     ) AUTO_INCREMENT = 1 DEFAULT CHARSET = UTF8`, (err, res) => {
-//       if (err) {
-//           console.log(err);
-//         }
-//       console.log(res);
-//     });
-
-// db.query("USE myblog", (err, res) => {
-//   if (err) {
-//       console.log(err);
-//     }
-//   console.log(res);
-// });
-
-// db.query("SHOW  DATABASES", (err, res) => {
-//     if (err) {
-//         console.log(err);
-//       }
-//     console.log(res);
-//   });
-
-//1111111111111111111111111111111111
-// db.query(
-//   `INSERT INTO irasai(pavadinimas, turinys) VALUES ('kitas','kitas')`,
-//   (err, res) => {
-//     if (err) {
-//       console.log(err);
-//     }
-//     console.log(res);
-//   }
-// );
-
-//22222222222222222222222222222222222
-// db.query("SELECT * FROM irasai", (err, res) => {
-//     if (err) {
-//         console.log(err);
-//       }
-//     console.log(res);
-//   });
-
-//33333333333333333333333333333333
-// db.query(`UPDATE irasai
-// SET pavadinimas = 'update'
-// WHERE 1`, (err, res) => {
-//     if (err) {
-//         console.log(err);
-//       }
-//     console.log(res);
-//   });
-
-//44444444444444444444444444444444
-// db.query("DELETE FROM irasai WHERE id>3", (err, res) => {
-//     if (err) {
-//         console.log(err);
-//       }
-//     console.log(res);
-//   });
-
-// db.query("SELECT * FROM irasai", (err, res) => {
-//   if (err) {
-//       console.log(err);
-//     }
-//   console.log(res);
-// });

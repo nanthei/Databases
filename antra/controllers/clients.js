@@ -1,0 +1,228 @@
+const express = require("express");
+const validator = require("validator");
+const path = require("path");
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: function (req, file, callback) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    callback(
+      null,
+      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
+    );
+  },
+});
+const upload = multer({
+  fileFilter: function (req, file, callback) {
+    if (file.mimetype != "image/jpeg" && file.mimetype != "image/png")
+      return callback(new Error("Neteisingas nuotraukos formatas"));
+
+    callback(null, true);
+  },
+  storage: storage,
+});
+const db = require("../db/connection");
+const app = express.Router();
+
+//Klientai
+
+app.get("/list-clients", (req, res) => {
+  let messages = req.query.m;
+  let status = req.query.s;
+
+  db.query(`SELECT * FROM customers`, (err, resp) => {
+    if (!err) {
+      res.render("template/clients/list-clients", {
+        clients: resp,
+        messages,
+        status,
+      });
+    } else {
+      res.redirect("/list-clients/?message=Įvyko klaida&s=danger");
+    }
+  });
+});
+
+app.get("/add-client", (req, res) => {
+  db.query(`SELECT id, name FROM companies`, (err, resp) => {
+    if (err) {
+      res.render("template/clients/add-client", {
+        message: "Nepavyko paimti kompanijų iš duomenų bazės.",
+      });
+    } else {
+      res.render("template/clients/add-client", { companies: resp });
+    }
+  });
+});
+
+app.post("/add-client", upload.single("photo"), (req, res) => {
+  let name = req.body.name;
+  let surname = req.body.surname;
+  let phone = req.body.phone;
+  let email = req.body.email;
+  let photo = req.file ? req.file.filename : "";
+  let comment = req.body.comment;
+  let company_id = req.body.company;
+
+  if (
+    !validator.isAlpha(name, "en-US", { ignore: " .ąĄčČęĘėĖįĮšŠųŲūŪ" }) ||
+    !validator.isLength(name, { min: 3, max: 50 })
+  ) {
+    res.redirect("/list-clients/?m=Įveskite kliento vardą&s=danger");
+    return;
+  }
+
+  if (
+    !validator.isAlpha(surname, "en-US", { ignore: " .ąĄčČęĘėĖįĮšŠųŲūŪ" }) ||
+    !validator.isLength(name, { min: 3, max: 50 })
+  ) {
+    res.redirect("/list-clients/?m=Įveskite kliento pavardę&s=danger");
+    return;
+  }
+
+  if (!validator.isMobilePhone(phone, "lt-LT")) {
+    res.redirect("/list-clients/?m=Įveskite kliento telefono numerį&s=danger");
+    return;
+  }
+
+  if (!validator.isEmail(email)) {
+    res.redirect("/list-clients/?m=Įveskite kliento el. pašto adresą&s=danger");
+    return;
+  }
+
+  if (!validator.isInt(company_id)) {
+    res.redirect("/list-clients/?m=Pasirinkite kompaniją&s=danger");
+    return;
+  }
+
+  db.query(
+    `INSERT INTO customers (name, surname, phone, email, photo, comment, company_id) 
+          VALUES ( '${name}', '${surname}', '${phone}', '${email}', '${photo}', '${comment}', '${company_id}' )`,
+    (err) => {
+      if (err) {
+        res.redirect("/list-clients/?m=Nepavyko pridėti kliento&s=danger");
+        return;
+      }
+
+      res.redirect("/list-clients/?m=Sėkmingai pridėjote klientą&s=success");
+    }
+  );
+});
+
+app.get("/edit-client/:id", (req, res) => {
+  let id = req.params.id;
+  let messages = req.query.m;
+  let status = req.query.s;
+
+  db.query(`SELECT * FROM customers WHERE id = ${id}`, (err, customer) => {
+    if (!err) {
+      //Išsitraukiame kompaniju sąrašą.
+      db.query(`SELECT id, name FROM companies`, (err, companies) => {
+        customer = customer[0];
+
+        //Sutikriname kompanijas ar kuri nors iš jų buvo priskirta klientui,
+        companies.forEach(function (val, index) {
+          //Jeigu einamas kompanijos id atitinka id iš kliento informacijos, prisikiriame naują indeksą ir reikšmę
+          if (customer["company_id"] == val["id"])
+            companies[index]["selected"] = true;
+        });
+
+        if (err) {
+          res.render("template/clients/add-client", {
+            client: customer,
+            messages: "Nepavyko paimti kompanijų iš duomenų bazės.",
+            status: "danger",
+          });
+        } else {
+          res.render("template/clients/edit-client", {
+            client: customer,
+            companies,
+            messages,
+            status,
+          });
+        }
+      });
+    } else {
+      res.redirect("/list-clients/?m=Tokio kliento rasti nepavyko&s=danger");
+    }
+  });
+});
+
+app.post("/edit-client/:id", upload.single("photo"), (req, res) => {
+  let id = req.params.id;
+  let name = req.body.name;
+  let surname = req.body.surname;
+  let phone = req.body.phone;
+  let email = req.body.email;
+  let photo = req.file ? req.file.filename : "";
+  let comment = req.body.comment;
+  let company_id = req.body.company;
+  let del_photo = req.body.delete_photo;
+  let sql = "";
+
+  console.log(req.body);
+
+  if (
+    !validator.isAlpha(name, "en-US", { ignore: " .ąĄčČęĘėĖįĮšŠųŲūŪ" }) ||
+    !validator.isLength(name, { min: 3, max: 50 })
+  ) {
+    res.redirect("/edit-client/" + id + "/?m=Įveskite kliento varda&s=danger");
+    return;
+  }
+
+  if (
+    !validator.isAlpha(surname, "en-US", { ignore: " .ąĄčČęĘėĖįĮšŠųŲūŪ" }) ||
+    !validator.isLength(surname, { min: 3, max: 50 })
+  ) {
+    res.redirect(
+      "/edit-client/" + id + "/?m=Įveskite kliento pavarde&s=danger"
+    );
+    return;
+  }
+
+  if (!validator.isMobilePhone(phone, "lt-LT")) {
+    res.redirect("/edit-client/" + id + "/?m=Įveskite kliento phone&s=danger");
+    return;
+  }
+
+  if (!validator.isEmail(email)) {
+    res.redirect("/edit-client/" + id + "/?m=Įveskite kliento email&s=danger");
+    return;
+  }
+
+  if (!validator.isInt(company_id)) {
+    res.redirect(
+      "/edit-client/" + id + "/?m=Įveskite kliento company&s=danger"
+    );
+    return;
+  }
+
+  if (photo || del_photo == 1) {
+    sql = `UPDATE customers SET name = '${name}', surname = '${surname}', phone = '${phone}', email = '${email}', photo = '${photo}', comment = '${comment}', company_id = '${company_id}' WHERE id = ${id}`;
+  } else {
+    sql = `UPDATE customers SET name = '${name}', surname = '${surname}', phone = '${phone}', email = '${email}', comment = '${comment}', company_id = '${company_id}' WHERE id = ${id}`;
+  }
+
+  db.query(sql, (err) => {
+    if (err) {
+      res.redirect("/list-clients/?m=Nepavyko pridėti kliento&s=danger");
+      return;
+    }
+
+    res.redirect("/list-clients/?m=Sėkmingai pridėjote klientą&s=success");
+  });
+});
+
+app.get("/delete-client/:id", (req, res) => {
+  let id = req.params.id;
+
+  db.query(`DELETE FROM customers WHERE id = ${id}`, (err, resp) => {
+    if (!err) {
+      res.redirect("/list-clients/?m=Įrašas sėkmingai ištrintas&s=success");
+    } else {
+      res.redirect("/list-clients/?m=Nepavyko ištrinti įrašo&s=danger");
+    }
+  });
+});
+
+module.exports = app;
