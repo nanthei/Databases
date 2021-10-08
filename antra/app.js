@@ -2,18 +2,20 @@ const express = require("express");
 const hbs = require("express-handlebars");
 const app = express();
 const path = require("path");
-// const db = require('./db/connection');
+const db = require("./db/connection");
 const clientsController = require("./controllers/clients");
 const companiesController = require("./controllers/companies");
-const loginController = require("./controllers/login");
 
-const session = require('express-session');
+//express-session
+const session = require("express-session");
 
-app.use(session({
-secret: 'secret',
-resave: true,
-saveUninitialized: true
-}));
+app.use(
+  session({
+    secret: "secret",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
 
 app.use(
   express.urlencoded({
@@ -27,6 +29,7 @@ app.engine(
     extname: "hbs",
     defaultLayout: "layout",
     layoutsDir: __dirname + "/views/template",
+    helpers: require("./config/handlebars-helpers"),
   })
 );
 
@@ -47,12 +50,31 @@ app.use(
 
 app.use("/", clientsController);
 app.use("/", companiesController);
-app.use("/", loginController);
 
 //Controlleris vedantis index puslapi
 
 app.get("/", (req, res) => {
+  //res.render('add-company');
   res.render("template/login");
+});
+
+app.post("/login", (req, res) => {
+  let user = req.body.email;
+  let pass = req.body.password;
+
+  if (user && pass) {
+    db.query(
+      `SELECT * FROM users WHERE email = '${user}' AND password = '${pass}'`,
+      (err, user) => {
+        if (!err && user.length > 0) {
+          console.log("test");
+          req.session.auth = true;
+        }
+      }
+    );
+  }
+
+  res.send("Sekmingai prisijungete");
 });
 
 app.listen("3000");

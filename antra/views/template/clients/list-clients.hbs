@@ -1,10 +1,42 @@
 <h1>Klientų sąrašas</h1>
+<div class="pt-3"></div>
 
 {{#if messages}}
     <div class="alert alert-{{status}}">{{messages}}</div>
 {{/if}}
 
+<div class="clearfix mb-3 toolbar">
+
+    <form action="/list-clients" class="form-inline">
+        <div class="input-group">
+        <select class="form-select" name="company_id" id="companyfilter">
+            <option value="0">Bedarbis</option>
+            {{#each companies}}
+                <option value="{{id}}" {{#if selected}}selected="selected"{{/if}}>{{name}}</option>
+            {{/each}}
+        </select>
+
+        <select class="form-select" name="order_by" id="orderby">
+            <option value="name" {{#eq order_by "name"}}selected="selected"{{/eq}}>Vardą</option>
+            <option value="surname" {{#eq order_by "surname"}}selected="selected"{{/eq}}>Pavardę</option>
+            <option value="email" {{#eq order_by "email"}}selected="selected"{{/eq}}>El. paštą</option>
+            <option value="company_id" {{#eq order_by "company_id"}}selected="selected"{{/eq}}>Kompaniją</option>
+        </select>
+
+        <select class="form-select" name="position" id="position">
+            <option value="ASC" {{#eq position "ASC"}}selected="selected"{{/eq}}>Didėjanti</option>
+            <option value="DESC" {{#eq position "DESC"}}selected="selected"{{/eq}}>Mažėjanti</option>
+        </select>
+
+        <button type="submit" class="float-start btn btn-secondary">Filtruoti</button>
+        </div>
+
+    </form>
+
+</div>
+
 {{#if clients}}
+
 <table class="table table-hover">
     <thead>
         <th>ID</th>
@@ -13,7 +45,7 @@
         <th>Pavardė</th>
         <th>Telefonas</th>
         <th>El. paštas</th>
-        <th>Komentaras</th>
+        <th>Kompanija</th>
         <th>Veiksmai</th>
     </thead>
     <tbody>
@@ -25,7 +57,7 @@
                 <td>{{surname}}</td>
                 <td>{{phone}}</td>
                 <td>{{email}}</td>
-                <td>{{{comment}}}</td>
+                <td>{{#if company_name}}{{company_name}}{{else}}Bedarbis{{/if}}</td>
                 <td>
                     <a href="/edit-client/{{id}}" class="btn btn-primary btn-sm">Redaguoti</a>
                     <a href="/delete-client/{{id}}" class="btn btn-danger btn-sm btn-delete">Ištrinti</a>
