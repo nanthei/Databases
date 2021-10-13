@@ -1,0 +1,40 @@
+<h1>knygos Edit</h1>
+{{#if messages}}
+    <div class="alert alert-{{status}}">{{messages}}</div>
+{{/if}}
+<div class="pt-3"></div>
+<form method="post" action="/edit-book/{{book.id}}">
+  <div class="mb-3">
+    <label for="title" class="form-label">title</label>
+    <input type="text" name="title" id="title" class="form-control" value="{{book.title}}" />
+  </div>
+  <div class="mb-3">
+    <label for="pages" class="form-label">pages</label>
+    <input
+      type="text"
+      name="pages"
+      id="pages"
+      class="form-control"
+      value="{{book.pages}}"
+    />
+  </div>
+  <div class="mb-3">
+    <label for="isbn" class="form-label">isbn </label>
+    <input type="text" name="isbn" id="isbn" class="form-control" value="{{book.isbn}}" />
+  </div>
+  <div class="mb-3">
+    <label for="short" class="form-label">short</label>
+    <input type="text" name="short" id="short" class="form-control" value="{{book.short}}" />
+  </div>
+ <div class="mb-3">
+        <label for="aid" class="form-label">aid</label>
+        <select name="aid" id="aid" class="form-control">
+            {{#each authors}}
+            <option value="{{id}}" {{#if selected}}selected="selected"{{/if}}>{{name}} {{surname}}</option>
+            {{/each}}
+        </select>
+    </div>
+  <button type="submit" class="btn btn-primary">Įrašyti</button>
+</form>
+
+<div class="pt-5"></div>

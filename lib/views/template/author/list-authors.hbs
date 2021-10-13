@@ -1,0 +1,34 @@
+<h1>Kompanijų sąrašas</h1>
+
+{{#if messages}}
+  <div class="alert alert-{{status}}">{{messages}}</div>
+{{/if}}
+
+<table class="table table-hover">
+  <thead>
+    <th>ID</th>
+    <th>Pavadinimas</th>
+    <th>surname</th>
+    <th>Veiksmai</th>
+  </thead>
+  <tbody>
+    {{#each authors}}
+      <tr>
+        <td>{{id}}</td>
+        <td>{{name}}</td>
+        <td>{{surname}}</td>
+        <td>
+          <a
+            href="/edit-author/{{id}}"
+            class="btn btn-primary btn-sm"
+          >Redaguoti</a>
+          <a
+            href="/delete-author/{{id}}"
+            class="btn btn-danger btn-sm btn-delete"
+          >Ištrinti</a>
+        </td>
+
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

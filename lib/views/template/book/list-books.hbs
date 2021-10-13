@@ -1,0 +1,72 @@
+<h1>knygu sąrašas</h1>
+<div class="pt-3"></div>
+
+{{#if messages}}
+    <div class="alert alert-{{status}}">{{messages}}</div>
+{{/if}}
+
+<div class="clearfix mb-3 toolbar">
+
+    <form action="/list-books" class="form-inline">
+        <div class="input-group">
+        <select class="form-select" name="aid" >
+            {{#each authors}}
+                <option value="{{id}}" {{#if selected}}selected="selected"{{/if}}>{{name}} {{surname}}</option>
+            {{/each}}
+        </select>
+
+        <select class="form-select" name="order_by" id="orderby">
+            <option value="title" {{#eq order_by "title"}}selected="selected"{{/eq}}>title</option>
+            <option value="pages" {{#eq order_by "pages"}}selected="selected"{{/eq}}>pages</option>
+            <option value="isbn" {{#eq order_by "isbn"}}selected="selected"{{/eq}}>isbn</option>
+            <option value="aid" {{#eq order_by "aid"}}selected="selected"{{/eq}}>aid</option>
+        </select>
+
+        <select class="form-select" name="position" id="position">
+            <option value="ASC" {{#eq position "ASC"}}selected="selected"{{/eq}}>Didėjanti</option>
+            <option value="DESC" {{#eq position "DESC"}}selected="selected"{{/eq}}>Mažėjanti</option>
+        </select>
+
+        <button type="submit" class="float-start btn btn-secondary">Filtruoti</button>
+        </div>
+
+    </form>
+
+</div>
+
+{{#if books}}
+
+<table class="table table-hover">
+    <thead>
+        <th>ID</th>
+        <th>title</th>
+        <th>pages</th>
+        <th>isbn</th>
+        <th>short</th>
+        <th>aid</th>
+        <th>Veiksmai</th>
+    </thead>
+    <tbody>
+        {{#each books}}
+            <tr>
+                <td>{{id}}</td>
+                <td>{{title}}</td>
+                <td>{{pages}}</td>
+                <td>{{isbn}}</td>
+                <td>{{short}}</td>
+                <td>{{#if aut_name}}{{aut_name}} {{aut_sur}}{{else}}listbooks.hbs{{/if}}</td>
+                <td>
+                    <a href="/edit-book/{{id}}" class="btn btn-primary btn-sm">Redaguoti</a>
+                    <a href="/delete-book/{{id}}" class="btn btn-danger btn-sm btn-delete">Ištrinti</a>
+                </td>
+
+            </tr>
+        {{/each}}
+    </tbody>
+</table>
+
+{{else}}
+
+    <h4>Šiuo metu duomenų bazėje nėra įvestų klientų.</h4>
+
+{{/if}}
