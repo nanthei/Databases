@@ -4,8 +4,5 @@ module.exports = {
       return options.fn(this);
     }
     return options.inverse(this);
-  },
-  testas: function () {
-    return "Testas";
-  },
+  }
 };

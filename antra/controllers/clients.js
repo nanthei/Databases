@@ -28,6 +28,10 @@ const app = express.Router();
 //Klientai
 
 app.get("/list-clients", (req, res) => {
+  if (!req.session.auth) {
+    res.redirect("/");
+    return;
+  }
   let messages = req.query.m;
   let status = req.query.s;
   let company_id = req.query.company_id != -1 ? req.query.company_id : "";
@@ -57,6 +61,8 @@ app.get("/list-clients", (req, res) => {
       }
       //(atvaizduojamu rezultatu skaiciu / parodomu rezultatu skaiciaus) * esamo puslapio
       //LIMIT 0, 10 - Limituoja gautų rezultatų skaičių nuo 0 iki 10. Pirma reikšmė reiškia nuo kurios eilutės pradedame imti rezultatus, o antroji kiek rezultatų imame.
+      //Pirmas puslapis - LIMIT 0, 10
+      //Antras puslapis - LIMIT 10, 20
       //ORDER BY pavadinimas - Rūšiuoja duomenis pagal pasirinktą stulpelį
       //Iš karto po ORDER BY gali sekti ASC arba DESC, kas reiškia pagal didėjimo tvarką arba atvirkščiai
 
@@ -96,6 +102,10 @@ app.get("/list-clients", (req, res) => {
 });
 
 app.get("/add-client", (req, res) => {
+  if (!req.session.auth) {
+    res.redirect("/");
+    return;
+  }
   db.query(`SELECT id, name FROM companies`, (err, resp) => {
     if (err) {
       res.render("template/clients/add-client", {
@@ -109,6 +119,10 @@ app.get("/add-client", (req, res) => {
 });
 
 app.post("/add-client", upload.single("photo"), (req, res) => {
+  if (!req.session.auth) {
+    res.redirect("/");
+    return;
+  }
   let name = req.body.name;
   let surname = req.body.surname;
   let phone = req.body.phone;
@@ -163,6 +177,10 @@ app.post("/add-client", upload.single("photo"), (req, res) => {
 });
 
 app.get("/edit-client/:id", (req, res) => {
+  if (!req.session.auth) {
+    res.redirect("/");
+    return;
+  }
   let id = req.params.id;
   let messages = req.query.m;
   let status = req.query.s;
@@ -204,6 +222,10 @@ app.get("/edit-client/:id", (req, res) => {
 });
 
 app.post("/edit-client/:id", upload.single("photo"), (req, res) => {
+  if (!req.session.auth) {
+    res.redirect("/");
+    return;
+  }
   let id = req.params.id;
   let name = req.body.name;
   let surname = req.body.surname;
@@ -266,6 +288,10 @@ app.post("/edit-client/:id", upload.single("photo"), (req, res) => {
 });
 
 app.get("/delete-client/:id", (req, res) => {
+  if (!req.session.auth) {
+    res.redirect("/");
+    return;
+  }
   let id = req.params.id;
 
   db.query(`SELECT photo FROM customers WHERE id = ${id}`, (err, customer) => {
